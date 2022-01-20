@@ -16,15 +16,34 @@ def daily_plan_results(resultsList):
                [sg.T('{}'.format(dinner['title']), text_color='gainsboro')],
                [sg.VPush()]
              ]
+
+    column_button_layout = [[sg.B('View',k='vRecipe1'), sg.B('Print',k='pRecipe1')],
+                            [sg.HorizontalSeparator(pad=12)],
+                            [sg.B('View',k='vRecipe2'),sg.B('Print',k='pRecipe2')],
+                            [sg.HorizontalSeparator(pad=12)],
+                            [sg.B('View',k='vRecipe3'),sg.B('Print',k='pRecipe3')]
+                           ]
+
     layout = [
-             [sg.Frame('',frame_layout)],
+             [sg.Frame('',frame_layout,border_width=2, relief='flat'), sg.Column(column_button_layout)],
              [sg.VPush()],
              [sg.HorizontalSeparator()],
              [sg.CButton('Close')]
              ]
     window = sg.Window('Daily Meal Plan',layout, font=('Courier New',12))
-    window.read()
-    window.close()
+# MAIN EVENT LOOP
+    while True:
+        event, values = window.read()
+        if event in (sg.WIN_CLOSED, 'Close'):
+            window.close()
+            break
+        if(event == 'vRecipe1'):
+            id = breakfast['id']
+            url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
+            headers = {'x-rapidapi-host': "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com",'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+            response = requests.request('GET', url, headers=headers).json()
+            webbrowser.open(response['sourceUrl'])
+#        if(event=='pRecipe1'):
 
 def generate_meal_plan():
     # setup GUI
@@ -62,7 +81,7 @@ def generate_meal_plan():
     print(f'INPUT DATA:\n{timeframe} | {calories} | {diet} | {exclude}')
     response = requests.request('GET', url, headers=headers, params=querystring).json()
     print('\n'*24)
-    print(response)
+#    print(response)
     print('-'*90)
     if timeframe == 'week':
         for item in response['items']:
@@ -76,7 +95,7 @@ def generate_meal_plan():
             print('id: {} | {}'.format(meal['id'],meal['title']))
         '''
 ''' MAIN SCREEN'''
-#setup GUI
+# setup GUI
 sg.theme('DarkAmber')
 layout = [ [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
            [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
