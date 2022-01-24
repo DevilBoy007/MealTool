@@ -9,26 +9,25 @@ def daily_plan_results(resultsList):
     dinner = resultsList[2]
     sg.theme('DarkAmber')
     frame_layout = [ [sg.T('Breakfast',font=('Courier New',18,'bold'))],
-               [sg.T('{}'.format(breakfast['title']), text_color='gainsboro')],
-               [sg.T('Lunch',font=('Courier New',18,'bold'))],
-               [sg.T('{}'.format(lunch['title']), text_color='gainsboro')],
-               [sg.T('Dinner',font=('Courier New',18,'bold'))],
-               [sg.T('{}'.format(dinner['title']), text_color='gainsboro')],
-               [sg.VPush()]
-             ]
+                   [sg.T('{}'.format(breakfast['title']), text_color='gainsboro')],
+                   [sg.T('Lunch',font=('Courier New',18,'bold'))],
+                   [sg.T('{}'.format(lunch['title']), text_color='gainsboro')],
+                   [sg.T('Dinner',font=('Courier New',18,'bold'))],
+                   [sg.T('{}'.format(dinner['title']), text_color='gainsboro')],
+                   [sg.VPush()]
+                   ]
 
-    column_button_layout = [[sg.B('View',k='vRecipe1'), sg.B('Print',k='pRecipe1')],
+    column_button_layout = [[sg.B('View',k='vRecipe1', font=('Courier New', 12, 'bold')), sg.B('Print',k='pRecipe1')],
                             [sg.HorizontalSeparator(pad=12)],
-                            [sg.B('View',k='vRecipe2'),sg.B('Print',k='pRecipe2')],
+                            [sg.B('View',k='vRecipe2', font=('Courier New', 12, 'bold')),sg.B('Print',k='pRecipe2')],
                             [sg.HorizontalSeparator(pad=12)],
-                            [sg.B('View',k='vRecipe3'),sg.B('Print',k='pRecipe3')]
+                            [sg.B('View',k='vRecipe3', font=('Courier New', 12, 'bold')),sg.B('Print',k='pRecipe3')]
                            ]
 
     layout = [
              [sg.Frame('',frame_layout,border_width=2, relief='flat'), sg.Column(column_button_layout)],
-             [sg.VPush()],
              [sg.HorizontalSeparator()],
-             [sg.CButton('Close')]
+             [sg.Push(),sg.CButton('Close', font=('Courier New',18, 'bold')),sg.Push()]
              ]
     window = sg.Window('Daily Meal Plan',layout, font=('Courier New',12))
 # MAIN EVENT LOOP
@@ -39,6 +38,18 @@ def daily_plan_results(resultsList):
             break
         if(event == 'vRecipe1'):
             id = breakfast['id']
+            url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
+            headers = {'x-rapidapi-host': "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com",'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+            response = requests.request('GET', url, headers=headers).json()
+            webbrowser.open(response['sourceUrl'])
+        if(event == 'vRecipe2'):
+            id = lunch['id']
+            url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
+            headers = {'x-rapidapi-host': "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com",'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+            response = requests.request('GET', url, headers=headers).json()
+            webbrowser.open(response['sourceUrl'])
+        if(event == 'vRecipe3'):
+            id = dinner['id']
             url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
             headers = {'x-rapidapi-host': "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com",'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
             response = requests.request('GET', url, headers=headers).json()
