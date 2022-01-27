@@ -2,12 +2,14 @@ import requests
 import PySimpleGUI as sg
 import webbrowser
 import json
+import os, sys
+import random
 
 def daily_plan_results(resultsList):
     breakfast = resultsList[0]
     lunch = resultsList[1]
     dinner = resultsList[2]
-    sg.theme('DarkAmber')
+#    sg.theme(selected_theme)
     frame_layout = [ [sg.T('Breakfast',font=('Courier New',18,'bold'))],
                    [sg.T('{}'.format(breakfast['title']), text_color='gainsboro')],
                    [sg.T('Lunch',font=('Courier New',18,'bold'))],
@@ -39,26 +41,26 @@ def daily_plan_results(resultsList):
         if(event == 'vRecipe1'):
             id = breakfast['id']
             url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
-            headers = {'x-rapidapi-host': "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com",'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+            headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
             response = requests.request('GET', url, headers=headers).json()
             webbrowser.open(response['sourceUrl'])
         if(event == 'vRecipe2'):
             id = lunch['id']
             url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
-            headers = {'x-rapidapi-host': "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com",'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+            headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
             response = requests.request('GET', url, headers=headers).json()
             webbrowser.open(response['sourceUrl'])
         if(event == 'vRecipe3'):
             id = dinner['id']
             url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
-            headers = {'x-rapidapi-host': "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com",'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+            headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
             response = requests.request('GET', url, headers=headers).json()
             webbrowser.open(response['sourceUrl'])
 #        if(event=='pRecipe1'):
 
 def generate_meal_plan():
     # setup GUI
-    sg.theme('DarkAmber')
+#    sg.theme(selected_theme)
     layout = [[sg.Text('Select timeframe')],
              [ sg.Radio('Daily', 'timeframe', default=True, k='daily', text_color='gainsboro'),sg.Radio('Weekly', 'timeframe',k='weekly',text_color='gainsboro') ],
              [sg.Text('What is your ideal daily caloric intake?')],
@@ -101,17 +103,72 @@ def generate_meal_plan():
 
     else:
         daily_plan_results(response['meals'])
+        window.close()
         '''
         for meal in response['meals']:
             print('id: {} | {}'.format(meal['id'],meal['title']))
         '''
-''' MAIN SCREEN'''
+
+def random_recipe_results(responseData):
+#    sg.theme(selected_theme)
+    ingrCol = (item['name'] for item in responseData['extendedIngredients'])
+    layout = [
+             [sg.Text('Recipe: ',font=('Courier New',15, 'bold')),sg.Text('{}'.format(responseData['title']))],
+             [sg.Text('Ingredients',font=('Courier New',15,'bold')),sg.Image(responseData['image'])],
+             [sg.Text('{}'.format('\n'.join(ingrCol)),auto_size_text=True)],
+             [sg.Push(),sg.B('Visit',k='visit'),sg.B('See recipe',k='print'),sg.Push()],
+             [sg.Push(),sg.CloseButton('Close'),sg.Push()]
+             ]
+    window = sg.Window('Random Recipe Results', layout)
+    while True:
+        event, values = window.read()
+        if event in (sg.WIN_CLOSED, 'Close'):
+            window.close()
+            return
+        if event == 'visit':
+            webbrowser.open(responseData['sourceUrl'])
+
+def random_recipe():
+    querystring = {'number':'1'}
+
+#    sg.theme(selected_theme)
+    layout = [
+             [sg.Sizer(h_pixels=0,v_pixels=10)],
+             [sg.T('Enter any constraint tags separated by commas')],
+             [sg.In(k='constraints')],
+             [sg.Sizer(h_pixels=0,v_pixels=10)],
+             [sg.HorizontalSeparator()],
+             [sg.Submit(), sg.Exit()]
+             ]
+
+    window = sg.Window('Random Meal', layout, element_justification='c')
+    event, values = window.read()
+    if event in (sg.WIN_CLOSED, 'Exit'):
+        window.close()
+        return
+    if values['constraints']:
+        querystring.update({'tags':values['constraints']})
+    url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/random'
+    headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+    # get the response
+    response = requests.request('GET', url, headers=headers, params=querystring).json()
+    try:
+        window.close()
+        random_recipe_results(response['recipes'][0])
+    except Exception as e:
+        sg.popup('no data found with matching parameters!\n\ttry some different keywords.')
+
+    ''' MAIN SCREEN'''
+### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
 # setup GUI
 sg.theme('DarkAmber')
-layout = [ [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
-           [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
-           [sg.B('Meal Plan', pad=(10,20), s = (30,3), k='mealplan')],
-           [sg.Exit()]
+selected_theme = sg.theme()
+layout = [
+         [sg.Push(),sg.B('change theme!',k='theme')],
+         [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
+         [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
+         [sg.B('Meal Plan', pad=(10,20), s = (30,3), k='mealplan')],
+         [sg.Exit()]
          ]
 window = sg.Window('this will have a clever name eventually', layout, element_justification='c', font=('Courier New', 15, 'bold'))
 # MAIN EVENT LOOP
@@ -120,9 +177,23 @@ while True:
     if event in (sg.WIN_CLOSED or 'Exit'):
         break
     print(event, values)
+    if event == 'theme':
+        window.close()
+        sg.theme(random.choice(sg.theme_list()))
+        selected_theme = sg.theme()
+        layout = [
+                 [sg.Push(),sg.B('change theme!',k='theme')],
+                 [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
+                 [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
+                 [sg.B('Meal Plan', pad=(10,20), s = (30,3), k='mealplan')],
+                 [sg.Exit()]
+                 ]
+        window = sg.Window('this will have a clever name eventually', layout, element_justification='c', font=('Courier New', 15, 'bold'))
     if event == 'search':
         quit()
+    if event == 'random':
+        random_recipe()
     if event == 'mealplan':
         generate_meal_plan()
 window.close()
-''' ------------------------------------------------------ '''
+### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
