@@ -1,9 +1,16 @@
+from PIL import Image
+from io import BytesIO
 import requests
 import PySimpleGUI as sg
 import webbrowser
 import json
 import os, sys
 import random
+
+def sanitize_image(bad_filetype):
+    with BytesIO() as f:
+        bad_filetype.save(f, format='PNG')
+        return f.getvalue()
 
 def daily_plan_results(resultsList):
     breakfast = resultsList[0]
@@ -111,10 +118,16 @@ def generate_meal_plan():
 
 def random_recipe_results(responseData):
 #    sg.theme(selected_theme)
+#    image = Image.open(requests.get(responseData['image']).raw) if responseData['imageType'] == 'png' else sanitize_image(Image.open(requests.get(responseData['image']).raw))
+
+#    if responseData['imageType'] == 'png':
+#        image = Image.open(requests.get(responseData['image']).raw)
+#    else:
+#        image = sanitize_image(Image.open(requests.get(responseData['image']).raw))
     ingrCol = (item['name'] for item in responseData['extendedIngredients'])
     layout = [
              [sg.Text('Recipe: ',font=('Courier New',15, 'bold')),sg.Text('{}'.format(responseData['title']))],
-             [sg.Text('Ingredients',font=('Courier New',15,'bold')),sg.Image(responseData['image'])],
+             [sg.Text('Ingredients',font=('Courier New',15,'bold'))],
              [sg.Text('{}'.format('\n'.join(ingrCol)),auto_size_text=True)],
              [sg.Push(),sg.B('Visit',k='visit'),sg.B('See recipe',k='print'),sg.Push()],
              [sg.Push(),sg.CloseButton('Close'),sg.Push()]
@@ -150,8 +163,10 @@ def random_recipe():
         querystring.update({'tags':values['constraints']})
     url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/random'
     headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+    sg.popup(querystring, 'query params')
     # get the response
     response = requests.request('GET', url, headers=headers, params=querystring).json()
+    print(response)
     try:
         window.close()
         random_recipe_results(response['recipes'][0])
@@ -161,7 +176,7 @@ def random_recipe():
     ''' MAIN SCREEN'''
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
 # setup GUI
-sg.theme('DarkAmber')
+sg.theme('BrightColors')
 selected_theme = sg.theme()
 layout = [
          [sg.Push(),sg.B('change theme!',k='theme')],
