@@ -18,11 +18,11 @@ def daily_plan_results(resultsList):
     dinner = resultsList[2]
 #    sg.theme(selected_theme)
     frame_layout = [ [sg.T('Breakfast',font=('Courier New',18,'bold'))],
-                   [sg.T('{}'.format(breakfast['title']), text_color='gainsboro')],
+                   [sg.T('{}'.format(breakfast['title']), background_color='grey', text_color='white')],
                    [sg.T('Lunch',font=('Courier New',18,'bold'))],
-                   [sg.T('{}'.format(lunch['title']), text_color='gainsboro')],
+                   [sg.T('{}'.format(lunch['title']), background_color='grey', text_color='white')],
                    [sg.T('Dinner',font=('Courier New',18,'bold'))],
-                   [sg.T('{}'.format(dinner['title']), text_color='gainsboro')],
+                   [sg.T('{}'.format(dinner['title']), background_color='grey', text_color='white')],
                    [sg.VPush()]
                    ]
 
@@ -69,13 +69,13 @@ def generate_meal_plan():
     # setup GUI
 #    sg.theme(selected_theme)
     layout = [[sg.Text('Select timeframe')],
-             [ sg.Radio('Daily', 'timeframe', default=True, k='daily', text_color='gainsboro'),sg.Radio('Weekly', 'timeframe',k='weekly',text_color='gainsboro') ],
+             [ sg.Radio('Daily', 'timeframe', default=True, k='daily', background_color='grey', text_color='white'),sg.Radio('Weekly', 'timeframe',k='weekly',background_color='grey', text_color='white') ],
              [sg.Text('What is your ideal daily caloric intake?')],
-             [sg.Spin([i for i in range(1,10000)], initial_value=2000, k='calories',text_color='gainsboro'), sg.Text('calories',text_color='gainsboro')],
+             [sg.Spin([i for i in range(1,10000)], initial_value=2000, k='calories',background_color='grey', text_color='white'), sg.Text('calories',background_color='grey', text_color='white')],
              [sg.Text('Select your diet type. (optional)')],
-             [sg.Listbox(['','vegan', 'vegetarian', 'pescatarian', 'gluten free', 'grain free', 'dairy free', 'high protein', 'low sodium', 'low carb', 'Paleo', 'Primal', 'ketogenic', 'FODMAP','Whole 30'],[''],auto_size_text=True,text_color='gainsboro',select_mode='LISTBOX_SELECT_MODE_MULTIPLE',s=(None,4),k='diet')],
+             [sg.Listbox(['','vegan', 'vegetarian', 'pescatarian', 'gluten free', 'grain free', 'dairy free', 'high protein', 'low sodium', 'low carb', 'Paleo', 'Primal', 'ketogenic', 'FODMAP','Whole 30'],[''],auto_size_text=True,text_color='black',select_mode='LISTBOX_SELECT_MODE_MULTIPLE',s=(None,4),k='diet')],
              [sg.Text('Any items you\'d like to avoid? (separate with commas)')],
-             [sg.In(text_color='gainsboro',k='exclude')],
+             [sg.In(background_color='red', text_color='white',k='exclude')],
              [sg.Submit(),sg.Exit(), sg.B('Return')]]
 
     window = sg.Window('Meal Planner', layout, element_justification='c',font=('Courier New',15))
@@ -144,7 +144,6 @@ def random_recipe_results(responseData):
 def random_recipe():
     querystring = {'number':'1'}
 
-#    sg.theme(selected_theme)
     layout = [
              [sg.Sizer(h_pixels=0,v_pixels=10)],
              [sg.T('Enter any constraint tags separated by commas')],
