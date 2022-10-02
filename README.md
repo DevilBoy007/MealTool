@@ -4,11 +4,11 @@ _v1_
 
 * _DEPENDENCIES_
 
-  * PIL (beta)
-  * io
-  * requests
-  * PySimpleGUI
-  * webbrowser
-  * json
+  * [PIL](https://pillow.readthedocs.io) (beta)
+  * io 
+  * [requests](https://requests.readthedocs.io)
+  * [PySimpleGUI](https://pysimplegui.org)
+  * [webbrowser](https://docs.python.org/3/library/webbrowser.html)
+  * [json](https://docs.python.org/3/library/json.html)
   * os, sys
-  * random
+  * [random](https://docs.python.org/3/library/random.html)
