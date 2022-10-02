@@ -4,7 +4,7 @@ import requests
 import PySimpleGUI as sg
 import webbrowser
 import json
-import os, sys
+#import os, sys
 import random
 
 def sanitize_image(bad_filetype):
