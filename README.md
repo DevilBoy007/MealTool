@@ -1,4 +1,4 @@
-##Meal Planning Tool##
+## Meal Planning Tool ##
 ---
 _v1_
 
