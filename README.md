@@ -1,5 +1,5 @@
 ## Meal Planning Tool ##
----
+
 _v1_
 
 * _DEPENDENCIES_
