@@ -7,6 +7,7 @@ import json
 #import os, sys
 import random
 
+# working on implementation of this function to display recipe image
 def sanitize_image(bad_filetype):
     with BytesIO() as f:
         bad_filetype.save(f, format='PNG')
@@ -66,8 +67,6 @@ def daily_plan_results(resultsList):
 #        if(event=='pRecipe1'):
 
 def generate_meal_plan():
-    # setup GUI
-#    sg.theme(selected_theme)
     layout = [[sg.Text('Select timeframe')],
              [ sg.Radio('Daily', 'timeframe', default=True, k='daily', background_color='grey', text_color='white'),sg.Radio('Weekly', 'timeframe',k='weekly',background_color='grey', text_color='white') ],
              [sg.Text('What is your ideal daily caloric intake?')],
@@ -117,7 +116,7 @@ def generate_meal_plan():
         '''
 
 def random_recipe_results(responseData):
-#    sg.theme(selected_theme)
+
 #    image = Image.open(requests.get(responseData['image']).raw) if responseData['imageType'] == 'png' else sanitize_image(Image.open(requests.get(responseData['image']).raw))
 
 #    if responseData['imageType'] == 'png':
@@ -165,7 +164,7 @@ def random_recipe():
     sg.popup(querystring, 'query params')
     # get the response
     response = requests.request('GET', url, headers=headers, params=querystring).json()
-    print(response)
+    # print(response)
     try:
         window.close()
         random_recipe_results(response['recipes'][0])
