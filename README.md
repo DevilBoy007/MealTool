@@ -13,6 +13,8 @@ This should allow you to start the app up by
 2. in a terminal, navigate to the working directory (`~/Downloads/MealTool` if you use the browser GUI)
 3. run `make` .. literally just type `make` and return/enter ;)
 
+---
+
 _v1_
 
 * _DEPENDENCIES_
