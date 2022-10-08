@@ -134,22 +134,22 @@ def generate_meal_plan():
 def random_recipe_results(responseData):
 
 #    image = Image.open(requests.get(responseData['image']).raw) if responseData['imageType'] == 'png' else sanitize_image(Image.open(requests.get(responseData['image']).raw))
-    print('about to try the image thing')
-    response = requests.get(responseData['image'])
-    if responseData['imageType'] == 'png':
-        print('it is a PNG! saving it...')
-        with open('/image.png','wb') as f:
-            f.write(response.content)
-#        image = Image.open('/image.png')
-    else:
-        print('was not a PNG :( santizing...')
-        with open('/image.{}'.format(responseData['imageType']),'wb') as f:
-            f.write(response.content)
-        image = Image.open('/image.{}'.format(responseData['imageType']))
-        image = sanitize_image(image)
-        image.save('/image.png')
-    print('we made it past the image sanitation!')
-    popup('text inside popup', 'title is here', image='/image.png')
+#     print('about to try the image thing')
+#     response = requests.get(responseData['image'])
+#     if responseData['imageType'] == 'png':
+#         print('it is a PNG! saving it...')
+#         with open('/image.png','wb') as f:
+#             f.write(response.content)
+# #        image = Image.open('/image.png')
+#     else:
+#         print('was not a PNG :( santizing...')
+#         with open('/image.{}'.format(responseData['imageType']),'wb') as f:
+#             f.write(response.content)
+#         image = Image.open('/image.{}'.format(responseData['imageType']))
+#         image = sanitize_image(image)
+#         image.save('/image.png')
+#     print('we made it past the image sanitation!')
+#     popup('text inside popup', 'title is here', image='/image.png')
     ingrCol = (item['name'] for item in responseData['extendedIngredients'])
     layout = [
              [sg.Text('Recipe: ',font=('Courier New',15, 'bold')),sg.Text('{}'.format(responseData['title']))],
