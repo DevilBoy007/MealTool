@@ -7,6 +7,23 @@ import json
 import os, sys
 import random
 
+
+def popup_image():
+    im = Image.open('test.jpg')
+    im_resize = im.resize((300, 200))
+    buf = BytesIO()
+    im_resize.save(buf, format='PNG')
+    byte_im = buf.getvalue()
+
+    layout = [
+             [sg.T('text above the image')],
+             [sg.Image(data=byte_im)],
+             [sg.Exit()]
+             ]
+    window = sg.Window('window title',layout, element_justification='c')
+    window.read()
+    window.close()
+    return
 def sanitize_image(bad_filetype):
     with BytesIO() as f:
         bad_filetype.save(f, format='PNG')
@@ -98,7 +115,7 @@ def generate_meal_plan():
     url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/mealplans/generate'
     querystring = {'timeFrame': timeframe,'targetCalories': calories,'diet': diet,'exclude': exclude}
     headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com', 'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
-    print(f'INPUT DATA:\n{timeframe} | {calories} | {diet} | {exclude}')
+#    print(f'INPUT DATA:\n{timeframe} | {calories} | {diet} | {exclude}')
     response = requests.request('GET', url, headers=headers, params=querystring).json()
     print('\n'*24)
 #    print(response)
@@ -119,11 +136,22 @@ def generate_meal_plan():
 def random_recipe_results(responseData):
 #    sg.theme(selected_theme)
 #    image = Image.open(requests.get(responseData['image']).raw) if responseData['imageType'] == 'png' else sanitize_image(Image.open(requests.get(responseData['image']).raw))
-
-#    if responseData['imageType'] == 'png':
-#        image = Image.open(requests.get(responseData['image']).raw)
-#    else:
-#        image = sanitize_image(Image.open(requests.get(responseData['image']).raw))
+    print('about to try the image thing')
+    response = requests.get(responseData['image'])
+    if responseData['imageType'] == 'png':
+        print('it is a PNG! saving it...')
+        with open('/image.png','wb') as f:
+            f.write(response.content)
+#        image = Image.open('/image.png')
+    else:
+        print('was not a PNG :( santizing...')
+        with open('/image.{}'.format(responseData['imageType']),'wb') as f:
+            f.write(response.content)
+        image = Image.open('/image.{}'.format(responseData['imageType']))
+        image = sanitize_image(image)
+        image.save('/image.png')
+    print('we made it past the image sanitation!')
+    popup('text inside popup', 'title is here', image='/image.png')
     ingrCol = (item['name'] for item in responseData['extendedIngredients'])
     layout = [
              [sg.Text('Recipe: ',font=('Courier New',15, 'bold')),sg.Text('{}'.format(responseData['title']))],
@@ -163,7 +191,7 @@ def random_recipe():
         querystring.update({'tags':values['constraints']})
     url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/random'
     headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
-    sg.popup(querystring, 'query params')
+#    sg.popup(querystring, 'query params')
     # get the response
     response = requests.request('GET', url, headers=headers, params=querystring).json()
     print(response)
@@ -171,6 +199,7 @@ def random_recipe():
         window.close()
         random_recipe_results(response['recipes'][0])
     except Exception as e:
+        print(e)
         sg.popup('no data found with matching parameters!\n\ttry some different keywords.')
 
     ''' MAIN SCREEN'''
@@ -179,7 +208,7 @@ def random_recipe():
 sg.theme('BrightColors')
 selected_theme = sg.theme()
 layout = [
-         [sg.Push(),sg.B('change theme!',k='theme')],
+         [sg.B('trigger popup',k='popup'),sg.Push(),sg.B('change theme!',k='theme')],
          [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
          [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
          [sg.B('Meal Plan', pad=(10,20), s = (30,3), k='mealplan')],
@@ -187,6 +216,7 @@ layout = [
          ]
 window = sg.Window('this will have a clever name eventually', layout, element_justification='c', font=('Courier New', 15, 'bold'))
 # MAIN EVENT LOOP
+path = './thing.png'
 while True:
     event, values = window.read()
     if event in (sg.WIN_CLOSED or 'Exit'):
@@ -197,7 +227,7 @@ while True:
         sg.theme(random.choice(sg.theme_list()))
         selected_theme = sg.theme()
         layout = [
-                 [sg.Push(),sg.B('change theme!',k='theme')],
+                 [sg.B('trigger popup',k='popup'),sg.Push(),sg.B('change theme!',k='theme')],
                  [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
                  [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
                  [sg.B('Meal Plan', pad=(10,20), s = (30,3), k='mealplan')],
@@ -210,5 +240,8 @@ while True:
         random_recipe()
     if event == 'mealplan':
         generate_meal_plan()
+    if event == 'popup':
+        popup_image()
+#        sg.popup('text inside popup',title='title is here',image=path)
 window.close()
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
