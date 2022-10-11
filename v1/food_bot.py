@@ -24,13 +24,13 @@ def popup_image():
     window.read()
     window.close()
     return
-# takes a jpg and returns a sanitized png
+# takes generic byte data and returns a sanitized png image stream
 def sanitize_image(generic_bytes):
     stream = BytesIO(generic_bytes)
     good_bytes = Image.open(stream)
+    good_bytes = good_bytes.resize((300, 200))
     buf = BytesIO()
     image = good_bytes.save(buf, format='PNG')
-    sg.popup('here is the  image', image=buf.getvalue())
     return buf.getvalue()
 
 def daily_plan_results(resultsList):
@@ -47,7 +47,8 @@ def daily_plan_results(resultsList):
                    [sg.VPush()]
                    ]
 
-    column_button_layout = [[sg.B('View',k='vRecipe1', font=('Courier New', 12, 'bold')), sg.B('Print',k='pRecipe1')],
+    column_button_layout = [
+                            [sg.B('View',k='vRecipe1', font=('Courier New', 12, 'bold')), sg.B('Print',k='pRecipe1')],
                             [sg.HorizontalSeparator(pad=12)],
                             [sg.B('View',k='vRecipe2', font=('Courier New', 12, 'bold')),sg.B('Print',k='pRecipe2')],
                             [sg.HorizontalSeparator(pad=12)],
@@ -87,7 +88,8 @@ def daily_plan_results(resultsList):
 #        if(event=='pRecipe1'):
 
 def generate_meal_plan():
-    layout = [[sg.Text('Select timeframe')],
+    layout = [
+             [sg.Text('Select timeframe')],
              [ sg.Radio('Daily', 'timeframe', default=True, k='daily', background_color='grey', text_color='white'),sg.Radio('Weekly', 'timeframe',k='weekly',background_color='grey', text_color='white') ],
              [sg.Text('What is your ideal daily caloric intake?')],
              [sg.Spin([i for i in range(1,10000)], initial_value=2000, k='calories',background_color='grey', text_color='white'), sg.Text('calories',background_color='grey', text_color='white')],
@@ -136,22 +138,20 @@ def generate_meal_plan():
         '''
 
 def random_recipe_results(responseData):
-   print(responseData['imageType'])
-
-#   image = Image.open(requests.get(responseData['image']).raw) if responseData['imageType'] == 'png' else sanitize_image(Image.open(requests.get(responseData['image']).raw))
-#   res = requests.get(responseData['image'], stream=True)
-   image = sanitize_image(requests.get(responseData['image']).content)
-#   sg.popup('here is the image', image=image)
-   ingrCol = (item['name'] for item in responseData['extendedIngredients'])
-   layout = [
+    try:
+        image = sanitize_image(requests.get(responseData['image']).content)
+    except Exception as e:
+        print(e)
+    ingrCol = (item['name'] for item in responseData['extendedIngredients'])
+    layout = [
              [sg.Text('Recipe: ',font=('Courier New',15, 'bold')),sg.Text('{}'.format(responseData['title']))],
              [sg.Text('Ingredients',font=('Courier New',15,'bold'))],
-             [sg.Text('{}'.format('\n'.join(ingrCol)),auto_size_text=True)],
+             [sg.Text('{}'.format('\n'.join(ingrCol)),auto_size_text=True), sg.Image(data=image)],
              [sg.Push(),sg.B('Visit',k='visit'),sg.B('See recipe',k='print'),sg.Push()],
              [sg.Push(),sg.CloseButton('Close'),sg.Push()]
              ]
-   window = sg.Window('Random Recipe Results', layout)
-   while True:
+    window = sg.Window('Random Recipe Results', layout)
+    while True:
         event, values = window.read()
         if event in (sg.WIN_CLOSED, 'Close'):
             window.close()
@@ -190,14 +190,14 @@ def random_recipe():
     except Exception as e:
         print(e)
         sg.popup('no data found with matching parameters!\n\ttry some different keywords.')
-
+### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
     ''' MAIN SCREEN'''
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
 # setup GUI
 sg.theme('BrightColors')
 selected_theme = sg.theme()
 layout = [
-         [sg.B('trigger popup',k='popup'),sg.Push(),sg.B('change theme!',k='theme')],
+         [sg.Push(),sg.B('change theme!',k='theme')],
          [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
          [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
          [sg.B('Meal Plan', pad=(10,20), s = (30,3), k='mealplan')],
@@ -216,7 +216,6 @@ while True:
         sg.theme(random.choice(sg.theme_list()))
         selected_theme = sg.theme()
         layout = [
-                 [sg.B('trigger popup',k='popup'),sg.Push(),sg.B('change theme!',k='theme')],
                  [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
                  [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
                  [sg.B('Meal Plan', pad=(10,20), s = (30,3), k='mealplan')],
@@ -229,8 +228,5 @@ while True:
         random_recipe()
     if event == 'mealplan':
         generate_meal_plan()
-    if event == 'popup':
-        popup_image()
-#        sg.popup('text inside popup',title='title is here',image=path)
 window.close()
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
