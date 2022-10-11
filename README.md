@@ -26,3 +26,18 @@ _v1_
   * [webbrowser](https://docs.python.org/3/library/webbrowser.html) - _built-in_
   * [json](https://docs.python.org/3/library/json.html) - _built-in_
   * [random](https://docs.python.org/3/library/random.html) - _built-in_
+## WHAT WORKS ##
+
+* random recipe button
+* meal plan button
+  * DAILY results only
+* dynamic theme change button
+
+## WHAT NEEDS WORK ##
+
+* search button needs to be fully implemented
+  * see [endpoint] (https://rapidapi.com/spoonacular/api/recipe-food-nutrition/)
+* meal plan button
+  * [WEEKLY] (https://rapidapi.com/spoonacular/api/recipe-food-nutrition/) results
+* ADD button for uploading custom recipes
+  * _no endpoint available! rely on sqlite databaseo_
