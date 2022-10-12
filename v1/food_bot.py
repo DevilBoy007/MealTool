@@ -25,34 +25,49 @@ def popup_image():
     window.close()
     return
 # takes generic byte data and returns a sanitized png image stream
-def sanitize_image(generic_bytes):
+def sanitize_image(generic_bytes, x=300, y=200):
     stream = BytesIO(generic_bytes)
     good_bytes = Image.open(stream)
-    good_bytes = good_bytes.resize((300, 200))
+    good_bytes = good_bytes.resize((x, y))
     buf = BytesIO()
     image = good_bytes.save(buf, format='PNG')
     return buf.getvalue()
+
+def get_image_from_id(id):
+    url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
+    headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com', 'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+    response = requests.request('GET', url, headers=headers).json()
+    image = requests.get(response['image']).content
+    return image
 
 def daily_plan_results(resultsList):
     breakfast = resultsList[0]
     lunch = resultsList[1]
     dinner = resultsList[2]
-#    sg.theme(selected_theme)
-    frame_layout = [ [sg.T('Breakfast',font=('Courier New',18,'bold'))],
+#    print(breakfast, lunch, dinner)
+    breakfast_image = sanitize_image(get_image_from_id(breakfast['id']), 60,40)
+    lunch_image = sanitize_image(get_image_from_id(lunch['id']), 60,40)
+    dinner_image = sanitize_image(get_image_from_id(dinner['id']), 60,40)
+
+    frame_layout = [ 
+                   [sg.T('Breakfast',font=('Courier New',18,'bold'))],
                    [sg.T('{}'.format(breakfast['title']), background_color='grey', text_color='white')],
+                   [sg.Image(data=breakfast_image)],                   
                    [sg.T('Lunch',font=('Courier New',18,'bold'))],
                    [sg.T('{}'.format(lunch['title']), background_color='grey', text_color='white')],
+                   [sg.Image(data=lunch_image)],                   
                    [sg.T('Dinner',font=('Courier New',18,'bold'))],
                    [sg.T('{}'.format(dinner['title']), background_color='grey', text_color='white')],
+                   [sg.Image(data=dinner_image)],                   
                    [sg.VPush()]
                    ]
 
     column_button_layout = [
-                            [sg.B('View',k='vRecipe1', font=('Courier New', 12, 'bold')), sg.B('Print',k='pRecipe1')],
+                            [sg.B('View',k='vRecipe1', font=('Courier New', 12, 'bold')), sg.B('See steps!',k='pRecipe1')],
                             [sg.HorizontalSeparator(pad=12)],
-                            [sg.B('View',k='vRecipe2', font=('Courier New', 12, 'bold')),sg.B('Print',k='pRecipe2')],
+                            [sg.B('View',k='vRecipe2', font=('Courier New', 12, 'bold')),sg.B('See steps!',k='pRecipe2')],
                             [sg.HorizontalSeparator(pad=12)],
-                            [sg.B('View',k='vRecipe3', font=('Courier New', 12, 'bold')),sg.B('Print',k='pRecipe3')]
+                            [sg.B('View',k='vRecipe3', font=('Courier New', 12, 'bold')),sg.B('See steps!',k='pRecipe3')]
                            ]
 
     layout = [
@@ -61,7 +76,7 @@ def daily_plan_results(resultsList):
              [sg.Push(),sg.CButton('Close', font=('Courier New',18, 'bold')),sg.Push()]
              ]
     window = sg.Window('Daily Meal Plan',layout, font=('Courier New',12))
-# MAIN EVENT LOOP
+# WINDOW EVENT LOOP
     while True:
         event, values = window.read()
         if event in (sg.WIN_CLOSED, 'Close'):
@@ -85,7 +100,12 @@ def daily_plan_results(resultsList):
             headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
             response = requests.request('GET', url, headers=headers).json()
             webbrowser.open(response['sourceUrl'])
-#        if(event=='pRecipe1'):
+        if(event=='pRecipe1'):
+            sg.popup('instructions',breakfast['instructions'])
+        if(event=='pRecipe2'):
+            sg.popup('instructions',lunch['instructions'])
+        if(event=='pRecipe3'):
+            sg.popup('instructions',dinner['instructions'])
 
 def generate_meal_plan():
     layout = [
@@ -101,7 +121,7 @@ def generate_meal_plan():
 
     window = sg.Window('Meal Planner', layout, element_justification='c',font=('Courier New',15))
 
-    # MAIN EVENT LOOP
+# WINDOW EVENT LOOP
     event, values = window.read()   # caputure screen input
     print(event, values) # FOR DEBUGGING
     if event in (sg.WIN_CLOSED, 'Exit'):  # user has exited
@@ -147,8 +167,8 @@ def random_recipe_results(responseData):
              [sg.Text('Recipe: ',font=('Courier New',15, 'bold')),sg.Text('{}'.format(responseData['title']))],
              [sg.Text('Ingredients',font=('Courier New',15,'bold'))],
              [sg.Text('{}'.format('\n'.join(ingrCol)),auto_size_text=True), sg.Image(data=image)],
-             [sg.Push(),sg.B('Visit',k='visit'),sg.B('See recipe',k='print'),sg.Push()],
-             [sg.Push(),sg.CloseButton('Close'),sg.Push()]
+             [sg.Push(),sg.B('Visit',k='visit'),sg.B('See steps!',k='print'),sg.Push()],
+             [sg.Save(bind_return_key=False),sg.Button('Close'),sg.Push()]
              ]
     window = sg.Window('Random Recipe Results', layout)
     while True:
@@ -158,6 +178,10 @@ def random_recipe_results(responseData):
             return
         if event == 'visit':
             webbrowser.open(responseData['sourceUrl'])
+        if event == 'print':
+            sg.popup('instructions',responseData['instructions'])
+        if event == 'Save':
+            save_recipe(responseData)
 
 def random_recipe():
     querystring = {'number':'1'}
