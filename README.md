@@ -36,8 +36,8 @@ _v1_
 ## WHAT NEEDS WORK ##
 
 * search button needs to be fully implemented
-  * see [endpoint] (https://rapidapi.com/spoonacular/api/recipe-food-nutrition/)
+  * see [endpoint](https://rapidapi.com/spoonacular/api/recipe-food-nutrition)
 * meal plan button
-  * [WEEKLY] (https://rapidapi.com/spoonacular/api/recipe-food-nutrition/) results
+  * [WEEKLY](https://rapidapi.com/spoonacular/api/recipe-food-nutrition) results
 * ADD button for uploading custom recipes
-  * _no endpoint available! rely on sqlite databaseo_
+  * _no endpoint available! rely on sqlite database_
