@@ -40,11 +40,17 @@ def get_image_from_id(id):
     image = requests.get(response['image']).content
     return image
 
+def get_instructions(id):
+    url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
+    headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com', 'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+    response = requests.request('GET', url, headers=headers).json()
+    return response['instructions']
+
 def daily_plan_results(resultsList):
     breakfast = resultsList[0]
     lunch = resultsList[1]
     dinner = resultsList[2]
-#    print(breakfast, lunch, dinner)
+    
     breakfast_image = sanitize_image(get_image_from_id(breakfast['id']), 60,40)
     lunch_image = sanitize_image(get_image_from_id(lunch['id']), 60,40)
     dinner_image = sanitize_image(get_image_from_id(dinner['id']), 60,40)
@@ -101,11 +107,11 @@ def daily_plan_results(resultsList):
             response = requests.request('GET', url, headers=headers).json()
             webbrowser.open(response['sourceUrl'])
         if(event=='pRecipe1'):
-            sg.popup('instructions',breakfast['instructions'])
+            sg.popup('instructions',get_instructions(breakfast['id']))
         if(event=='pRecipe2'):
-            sg.popup('instructions',lunch['instructions'])
+            sg.popup('instructions',get_instructions(lunch['id']))
         if(event=='pRecipe3'):
-            sg.popup('instructions',dinner['instructions'])
+            sg.popup('instructions',get_instructions(dinner['id']))
 
 def generate_meal_plan():
     layout = [
@@ -240,6 +246,7 @@ while True:
         sg.theme(random.choice(sg.theme_list()))
         selected_theme = sg.theme()
         layout = [
+                 [sg.Push(),sg.B('change theme!',k='theme')],
                  [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
                  [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
                  [sg.B('Meal Plan', pad=(10,20), s = (30,3), k='mealplan')],
