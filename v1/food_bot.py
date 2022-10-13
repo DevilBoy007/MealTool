@@ -1,13 +1,15 @@
+# external dependencies
 from PIL import Image
-from io import BytesIO
 import requests
 import PySimpleGUI as sg
+# built-in libraries
+from io import BytesIO
 import webbrowser
 import json
-#import os, sys
 import random
 
-
+# HELPER FUNCTIONS #
+# popup window developed for testing Image presentation. not used in final product. 
 def popup_image():
     im = Image.open('test.jpg')
     im_resize = im.resize((300, 200))
@@ -24,8 +26,12 @@ def popup_image():
     window.read()
     window.close()
     return
-# takes generic byte data and returns a sanitized png image stream
+
 def sanitize_image(generic_bytes, x=300, y=200):
+    '''
+    takes generic image byte data and returns a sanitized png image stream.
+    supports resizing by supplying arguments to `x`, `y` parameters. default size is 300x200. 
+    '''
     stream = BytesIO(generic_bytes)
     good_bytes = Image.open(stream)
     good_bytes = good_bytes.resize((x, y))
@@ -34,16 +40,20 @@ def sanitize_image(generic_bytes, x=300, y=200):
     return buf.getvalue()
 
 def get_recipe_information(id, key):
+    '''
+    takes a recipe id and a dictionary key and returns the value of that key from the data response.
+    '''
     url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
     headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com', 'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
     response = requests.request('GET', url, headers=headers).json()
     return response[key]
 
 def get_image_from_id(id):
-    url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
-    headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com', 'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
-    response = requests.request('GET', url, headers=headers).json()
-    image = requests.get(response['image']).content
+    '''
+    takes a recipe id and returns the sanitized image stream. 
+    utilizes the `sanitize_image` & `get_recipe_information` functions
+    '''
+    image = requests.get(get_recipe_information(id,'image')).content
     return image
 
 def daily_plan_results(resultsList):
@@ -82,30 +92,19 @@ def daily_plan_results(resultsList):
              [sg.Push(),sg.CButton('Close', font=('Courier New',18, 'bold')),sg.Push()]
              ]
     window = sg.Window('Daily Meal Plan',layout, font=('Courier New',12))
-# WINDOW EVENT LOOP
+    # WINDOW EVENT LOOP
     while True:
         event, values = window.read()
         if event in (sg.WIN_CLOSED, 'Close'):
             window.close()
             break
         if(event == 'vRecipe1'):
-            id = breakfast['id']
-            url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
-            headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
-            response = requests.request('GET', url, headers=headers).json()
-            webbrowser.open(response['sourceUrl'])
+            webbrowser.open(get_recipe_information(breakfast['id'], 'sourceUrl'))
         if(event == 'vRecipe2'):
-            id = lunch['id']
-            url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
-            headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
-            response = requests.request('GET', url, headers=headers).json()
-            webbrowser.open(response['sourceUrl'])
+            webbrowser.open(get_recipe_information(lunch['id'], 'sourceUrl'))
         if(event == 'vRecipe3'):
-            id = dinner['id']
-            url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
-            headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
-            response = requests.request('GET', url, headers=headers).json()
-            webbrowser.open(response['sourceUrl'])
+            webbrowser.open(get_recipe_information(dinner['id'], 'sourceUrl'))
+
         if(event=='pRecipe1'):
             sg.popup('instructions',get_recipe_information(breakfast['id'], 'instructions'))
         if(event=='pRecipe2'):
@@ -127,7 +126,7 @@ def generate_meal_plan():
 
     window = sg.Window('Meal Planner', layout, element_justification='c',font=('Courier New',15))
 
-# WINDOW EVENT LOOP
+    # WINDOW EVENT LOOP
     event, values = window.read()   # caputure screen input
     print(event, values) # FOR DEBUGGING
     if event in (sg.WIN_CLOSED, 'Exit'):  # user has exited
@@ -145,10 +144,10 @@ def generate_meal_plan():
     url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/mealplans/generate'
     querystring = {'timeFrame': timeframe,'targetCalories': calories,'diet': diet,'exclude': exclude}
     headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com', 'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
-#    print(f'INPUT DATA:\n{timeframe} | {calories} | {diet} | {exclude}')
+
     response = requests.request('GET', url, headers=headers, params=querystring).json()
     print('\n'*24)
-#    print(response)
+
     print('-'*90)
     if timeframe == 'week':
         for item in response['items']:
@@ -203,7 +202,10 @@ def random_recipe():
 
     window = sg.Window('Random Meal', layout, element_justification='c')
     event, values = window.read()
-    if event in (sg.WIN_CLOSED, 'Close'):
+    if event in (sg.WIN_CLOSED, 'Exit'):
+        window.close()
+        quit()
+    if event == 'Close':
         window.close()
         return
     if values['constraints']:
@@ -220,22 +222,23 @@ def random_recipe():
     except Exception as e:
         print(e)
         sg.popup('no data found with matching parameters!\n\ttry some different keywords.')
+
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
-    ''' MAIN SCREEN'''
+#    MAIN SCREEN
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
 # setup GUI
 sg.theme('BrightColors')
 selected_theme = sg.theme()
 layout = [
-         [sg.Push(),sg.B('change theme!',k='theme')],
+         [sg.T(f"{selected_theme}"), sg.Push(),sg.B('change theme!',k='theme')],
          [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
          [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
          [sg.B('Meal Plan', pad=(10,20), s = (30,3), k='mealplan')],
          [sg.Exit()]
          ]
 window = sg.Window('this will have a clever name eventually', layout, element_justification='c', font=('Courier New', 15, 'bold'))
-# MAIN EVENT LOOP
 
+# MAIN EVENT LOOP
 while True:
     event, values = window.read()
     if event in (sg.WIN_CLOSED or 'Exit'):
@@ -246,7 +249,7 @@ while True:
         sg.theme(random.choice(sg.theme_list()))
         selected_theme = sg.theme()
         layout = [
-                 [sg.Push(),sg.B('change theme!',k='theme')],
+                 [sg.T(f"{selected_theme}"), sg.Push(),sg.B('change theme!',k='theme')],
                  [sg.B('Search',pad=(10,20), s = (30,3), k='search')],
                  [sg.B('Random', pad=(10,20), s = (30,3), k='random')],
                  [sg.B('Meal Plan', pad=(10,20), s = (30,3), k='mealplan')],
