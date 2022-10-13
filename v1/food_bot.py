@@ -33,18 +33,18 @@ def sanitize_image(generic_bytes, x=300, y=200):
     image = good_bytes.save(buf, format='PNG')
     return buf.getvalue()
 
+def get_recipe_information(id, key):
+    url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
+    headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com', 'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
+    response = requests.request('GET', url, headers=headers).json()
+    return response[key]
+
 def get_image_from_id(id):
     url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
     headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com', 'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
     response = requests.request('GET', url, headers=headers).json()
     image = requests.get(response['image']).content
     return image
-
-def get_instructions(id):
-    url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/{}/information'.format(id)
-    headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com', 'x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
-    response = requests.request('GET', url, headers=headers).json()
-    return response['instructions']
 
 def daily_plan_results(resultsList):
     breakfast = resultsList[0]
@@ -69,11 +69,11 @@ def daily_plan_results(resultsList):
                    ]
 
     column_button_layout = [
-                            [sg.B('View',k='vRecipe1', font=('Courier New', 12, 'bold')), sg.B('See steps!',k='pRecipe1')],
+                            [sg.B('View',k='vRecipe1', font=('Courier New', 12, 'bold')), sg.B('See steps!',k='pRecipe1', font=('Courier New', 12, 'bold'))],
                             [sg.HorizontalSeparator(pad=12)],
-                            [sg.B('View',k='vRecipe2', font=('Courier New', 12, 'bold')),sg.B('See steps!',k='pRecipe2')],
+                            [sg.B('View',k='vRecipe2', font=('Courier New', 12, 'bold')),sg.B('See steps!',k='pRecipe2', font=('Courier New', 12, 'bold'))],
                             [sg.HorizontalSeparator(pad=12)],
-                            [sg.B('View',k='vRecipe3', font=('Courier New', 12, 'bold')),sg.B('See steps!',k='pRecipe3')]
+                            [sg.B('View',k='vRecipe3', font=('Courier New', 12, 'bold')),sg.B('See steps!',k='pRecipe3', font=('Courier New', 12, 'bold'))]
                            ]
 
     layout = [
@@ -107,11 +107,11 @@ def daily_plan_results(resultsList):
             response = requests.request('GET', url, headers=headers).json()
             webbrowser.open(response['sourceUrl'])
         if(event=='pRecipe1'):
-            sg.popup('instructions',get_instructions(breakfast['id']))
+            sg.popup('instructions',get_recipe_information(breakfast['id'], 'instructions'))
         if(event=='pRecipe2'):
-            sg.popup('instructions',get_instructions(lunch['id']))
+            sg.popup('instructions',get_recipe_information(lunch['id'], 'instructions'))
         if(event=='pRecipe3'):
-            sg.popup('instructions',get_instructions(dinner['id']))
+            sg.popup('instructions',get_recipe_information(dinner['id'], 'instructions'))
 
 def generate_meal_plan():
     layout = [
@@ -198,22 +198,22 @@ def random_recipe():
              [sg.In(k='constraints')],
              [sg.Sizer(h_pixels=0,v_pixels=10)],
              [sg.HorizontalSeparator()],
-             [sg.Submit(), sg.Exit()]
+             [sg.Submit(), sg.Exit(), sg.B('Close')]
              ]
 
     window = sg.Window('Random Meal', layout, element_justification='c')
     event, values = window.read()
-    if event in (sg.WIN_CLOSED, 'Exit'):
+    if event in (sg.WIN_CLOSED, 'Close'):
         window.close()
         return
     if values['constraints']:
         querystring.update({'tags':values['constraints']})
     url = 'https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/random'
     headers = {'x-rapidapi-host': 'spoonacular-recipe-food-nutrition-v1.p.rapidapi.com','x-rapidapi-key': '8d36fc9dacmsh905d9e293400d5bp1c6bedjsnb29677382b1b'}
-#    sg.popup(querystring, 'query params')
+
     # get the response
     response = requests.request('GET', url, headers=headers, params=querystring).json()
-    # print(response)
+
     try:
         window.close()
         random_recipe_results(response['recipes'][0])
@@ -235,7 +235,7 @@ layout = [
          ]
 window = sg.Window('this will have a clever name eventually', layout, element_justification='c', font=('Courier New', 15, 'bold'))
 # MAIN EVENT LOOP
-path = './thing.png'
+
 while True:
     event, values = window.read()
     if event in (sg.WIN_CLOSED or 'Exit'):
